@@ -16,7 +16,7 @@ public class Main {
         injector = Guice.createInjector(new AbstractModule() {
             @Override
             protected void configure() {
-                bind(UserCredential.class).toInstance(new FixedUserCredential());
+                bind(UserCredential.class).toInstance(new FileUserCredential());
             }
         });
 

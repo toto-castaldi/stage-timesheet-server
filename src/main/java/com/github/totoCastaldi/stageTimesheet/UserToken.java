@@ -9,6 +9,7 @@ import org.apache.commons.lang.StringUtils;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.io.IOException;
 import java.util.Map;
 
 /**
@@ -29,7 +30,7 @@ public class UserToken {
     }
 
     @Synchronized
-    public Optional<String> generate(String email, String password) {
+    public Optional<String> generate(String email, String password) throws IOException {
         if (this.userCredential.isValid(email, password)) {
             String random = StringUtils.EMPTY;
             while (StringUtils.isBlank(random) || tokens.containsKey(random)) {

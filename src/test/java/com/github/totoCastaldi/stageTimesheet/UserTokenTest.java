@@ -8,6 +8,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.io.IOException;
+
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
@@ -28,7 +30,7 @@ public class UserTokenTest {
     private String password1 = "hidden";
 
     @Before
-    public void setup() {
+    public void setup() throws IOException {
         Mockito.when(userCredential.isValid(email0, password0)).thenReturn(true);
         Mockito.when(userCredential.isValid(email1, password1)).thenReturn(true);
 
@@ -38,7 +40,7 @@ public class UserTokenTest {
     }
 
     @Test
-    public void testLogin() {
+    public void testLogin() throws IOException {
         final Optional<String> token = userToken.generate(email0, password0);
 
         assertThat(token, is(not(nullValue())));
@@ -55,7 +57,7 @@ public class UserTokenTest {
     }
 
     @Test
-    public void testUser() {
+    public void testUser() throws IOException {
         final Optional<String> token = userToken.generate(email0, password0);
 
         final Optional<String> user = userToken.user(token.get());
