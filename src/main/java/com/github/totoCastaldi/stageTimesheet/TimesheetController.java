@@ -12,6 +12,8 @@ import org.rapidoid.annotation.POST;
 import org.rapidoid.http.Req;
 
 import javax.annotation.Nullable;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Map;
 
@@ -35,12 +37,15 @@ public class TimesheetController {
     public List<String> entries(String token) {
         final Optional<String> user = this.userToken.user(token);
         if (user.isPresent()) {
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/YYYY");
             final String username = user.get();
             return Lists.newArrayList(Collections2.transform(userEntries.get(username), new Function<Entry, String>() {
                 @Nullable
                 @Override
                 public String apply(@Nullable Entry input) {
-                    return  StringUtils.leftPad(String.valueOf(input.getOim()), 2, "0") + " - " +
+
+                    return  sdf.format(input.getDate()) + " - " +
+                            StringUtils.leftPad(String.valueOf(input.getOim()), 2, "0") + " - " +
                             StringUtils.leftPad(String.valueOf(input.getOum()), 2, "0") + " | " +
                             StringUtils.leftPad(String.valueOf(input.getOip()), 2, "0") + " - " +
                             StringUtils.leftPad(String.valueOf(input.getOip()), 2, "0") + " | " +
@@ -55,18 +60,27 @@ public class TimesheetController {
     }
 
     @POST
-    public void entry(Req req) {
+    public void entry(Req req) throws ParseException {
         final Map<String, Object> posted = req.posted();
-        String token = String.valueOf(posted.get("token"));
+
+        log.info("entry post {}", posted);
+
+        final String token = String.valueOf(posted.get("token"));
+
+        final Optional<String> user = this.userToken.user(token);
+
+        log.info("user {}", user);
+
         int oim = Integer.parseInt(String.valueOf(posted.get("oim")));
         int oum = Integer.parseInt(String.valueOf(posted.get("oum")));
         int oip = Integer.parseInt(String.valueOf(posted.get("oip")));
         int oup = Integer.parseInt(String.valueOf(posted.get("oup")));
         String d = String.valueOf(posted.get("d"));
-        final Entry entry = Entry.of(oim, oum, oip, oup, d);
+        String date = String.valueOf(posted.get("date"));
+        SimpleDateFormat sdf = new SimpleDateFormat("YYYYMMdd");
+        final Entry entry = Entry.of(oim, oum, oip, oup, d, sdf.parse(date));
         log.info("entry {}", entry);
         //, int oim, int oum, int oip, int oup, String d
-        final Optional<String> user = this.userToken.user(token);
         if (user.isPresent()) {
             final String username = user.get();
             this.userEntries.put(username, entry);

@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.ToString;
 
+import java.util.Date;
+
 /**
  * Created by toto on 18/05/16.
  */
@@ -16,4 +18,5 @@ public class Entry {
     private int oip;
     private int oup;
     private String description;
+    private Date date;
 }
