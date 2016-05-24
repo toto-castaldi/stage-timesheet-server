@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.rapidoid.annotation.Controller;
+import org.rapidoid.annotation.DELETE;
 import org.rapidoid.annotation.GET;
 import org.rapidoid.annotation.POST;
 import org.rapidoid.http.Req;
@@ -43,19 +44,13 @@ public class TimesheetController {
         if (user.isPresent()) {
             SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/YYYY");
             final String username = user.get();
-            List<Entry> entries = Lists.newArrayList(userEntries.get(username));
-            Collections.sort(entries, new Comparator<Entry>() {
-                @Override
-                public int compare(Entry o1, Entry o2) {
-                    return (int) (o2.getDate().getTime() - o1.getDate().getTime());
-                }
-            });
+            List<Entry> entries = sorted(username);
             return Lists.newArrayList(Collections2.transform(entries, new Function<Entry, String>() {
                 @Nullable
                 @Override
                 public String apply(@Nullable Entry input) {
 
-                    return  sdf.format(input.getDate()) + " - " +
+                    return sdf.format(input.getDate()) + " - " +
                             StringUtils.leftPad(String.valueOf(input.getOim()), 2, "0") + " - " +
                             StringUtils.leftPad(String.valueOf(input.getOum()), 2, "0") + " | " +
                             StringUtils.leftPad(String.valueOf(input.getOip()), 2, "0") + " - " +
@@ -68,6 +63,17 @@ public class TimesheetController {
             return Lists.newArrayList();
         }
 
+    }
+
+    private List<Entry> sorted(String username) {
+        List<Entry> entries = Lists.newArrayList(userEntries.get(username));
+        Collections.sort(entries, new Comparator<Entry>() {
+            @Override
+            public int compare(Entry o1, Entry o2) {
+                return (int) (o2.getDate().getTime() - o1.getDate().getTime());
+            }
+        });
+        return entries;
     }
 
     @POST
@@ -96,6 +102,17 @@ public class TimesheetController {
             final String username = user.get();
             this.userEntries.put(username, entry);
         }
+    }
 
+    @DELETE
+    public void entry(String token, int position) {
+        position --;
+        final Optional<String> user = this.userToken.user(token);
+        if (user.isPresent()) {
+            final String username = user.get();
+            List<Entry> entries = sorted(username);
+            final Entry entry = entries.get(position);
+            this.userEntries.remove(username, entry.getId());
+        }
     }
 }

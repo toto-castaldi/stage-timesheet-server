@@ -1,7 +1,7 @@
 package com.github.totoCastaldi.stageTimesheet;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
 import java.util.Date;
@@ -10,13 +10,14 @@ import java.util.Date;
  * Created by toto on 18/05/16.
  */
 @Data
-@AllArgsConstructor(staticName = "of")
+@RequiredArgsConstructor(staticName = "of")
 @ToString
 public class Entry {
-    private int oim;
-    private int oum;
-    private int oip;
-    private int oup;
-    private String description;
-    private Date date;
+    private final int oim;
+    private final int oum;
+    private final int oip;
+    private final int oup;
+    private final String description;
+    private final Date date;
+    private long id;
 }
