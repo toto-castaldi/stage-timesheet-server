@@ -1,5 +1,8 @@
-package com.github.totoCastaldi.stageTimesheet;
+package com.github.totoCastaldi.stageTimesheet.controller;
 
+import com.github.totoCastaldi.stageTimesheet.Main;
+import com.github.totoCastaldi.stageTimesheet.UserCredential;
+import com.github.totoCastaldi.stageTimesheet.UserToken;
 import com.google.common.base.Optional;
 import org.rapidoid.annotation.Controller;
 import org.rapidoid.annotation.POST;

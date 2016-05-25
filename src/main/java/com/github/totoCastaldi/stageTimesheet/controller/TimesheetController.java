@@ -1,9 +1,15 @@
-package com.github.totoCastaldi.stageTimesheet;
+package com.github.totoCastaldi.stageTimesheet.controller;
 
+import com.github.totoCastaldi.stageTimesheet.Entry;
+import com.github.totoCastaldi.stageTimesheet.Main;
+import com.github.totoCastaldi.stageTimesheet.UserEntries;
+import com.github.totoCastaldi.stageTimesheet.UserToken;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
+import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
@@ -65,6 +71,57 @@ public class TimesheetController {
 
     }
 
+    @GET
+    public List<String> mostUsedDescription(String token) {
+        final Optional<String> user = this.userToken.user(token);
+        if (user.isPresent()) {
+            final String username = user.get();
+            final Collection<Entry> entryCollection = userEntries.get(username);
+            final Map<String, Integer> counting = Maps.newHashMap();
+            final Map<String, String> original = Maps.newHashMap();
+            for (Entry e : entryCollection) {
+                final String key = StringUtils.stripToEmpty(StringUtils.lowerCase(e.getDescription()));
+                if (counting.containsKey(key)) {
+                    counting.put(key, counting.get(key) + 1);
+                } else {
+                    counting.put(key, 1);
+                }
+                original.put(key, e.getDescription());
+            }
+
+            List<Integer> ranking = Lists.newArrayList(counting.values());
+            Collections.sort(ranking);
+            Collections.reverse(ranking);
+            List<String> result = Lists.newArrayList();
+            for (int i = 0; i < 3; i++) {
+                if (ranking.size() > 0) {
+                    int count = ranking.get(0);
+                    final Map<String, Integer> withRanking = Maps.filterEntries(counting, new Predicate<Map.Entry<String, Integer>>() {
+                        @Override
+                        public boolean apply(@Nullable Map.Entry<String, Integer> input) {
+                            if (input != null) {
+                                return input.getValue() == count;
+                            } else {
+                                return false;
+                            }
+                        }
+                    });
+                    if (withRanking.size() > 0) {
+                        final String key = withRanking.keySet().iterator().next();
+                        result.add(original.get(key));
+                        counting.remove(key);
+                    }
+                    ranking.remove(0);
+                }
+            }
+
+            return result;
+        } else {
+            return Lists.newArrayList();
+        }
+
+    }
+
     private List<Entry> sorted(String username) {
         List<Entry> entries = Lists.newArrayList(userEntries.get(username));
         Collections.sort(entries, new Comparator<Entry>() {
@@ -106,7 +163,7 @@ public class TimesheetController {
 
     @DELETE
     public void entry(String token, int position) {
-        position --;
+        position --; //Trick for AppInventor
         final Optional<String> user = this.userToken.user(token);
         if (user.isPresent()) {
             final String username = user.get();
