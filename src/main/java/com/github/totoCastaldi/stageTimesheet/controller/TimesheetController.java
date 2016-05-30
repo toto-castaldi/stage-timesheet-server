@@ -8,6 +8,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
@@ -60,7 +61,7 @@ public class TimesheetController {
                             StringUtils.leftPad(String.valueOf(input.getOim()), 2, "0") + " - " +
                             StringUtils.leftPad(String.valueOf(input.getOum()), 2, "0") + " | " +
                             StringUtils.leftPad(String.valueOf(input.getOip()), 2, "0") + " - " +
-                            StringUtils.leftPad(String.valueOf(input.getOip()), 2, "0") + " | " +
+                            StringUtils.leftPad(String.valueOf(input.getOup()), 2, "0") + " | " +
                             StringUtils.left(StringUtils.rightPad(input.getDescription(), 20, " "), 20)
                             ;
                 }
@@ -122,6 +123,22 @@ public class TimesheetController {
 
     }
 
+    @GET
+    public String lastDescription(String token) {
+        final Optional<String> user = this.userToken.user(token);
+        if (user.isPresent()) {
+            final String username = user.get();
+            List<Entry> entries = sorted(username);
+
+            if (Iterables.size(entries) > 0) {
+                return entries.get(0).getDescription();
+            }
+        }
+
+        return StringUtils.EMPTY;
+
+    }
+
     private List<Entry> sorted(String username) {
         List<Entry> entries = Lists.newArrayList(userEntries.get(username));
         Collections.sort(entries, new Comparator<Entry>() {
@@ -149,6 +166,13 @@ public class TimesheetController {
         int oum = Integer.parseInt(String.valueOf(posted.get("oum")));
         int oip = Integer.parseInt(String.valueOf(posted.get("oip")));
         int oup = Integer.parseInt(String.valueOf(posted.get("oup")));
+
+        //Trick for AppInventor
+        oim --;
+        oum --;
+        oip --;
+        oup --;
+
         String d = String.valueOf(posted.get("d"));
         String date = String.valueOf(posted.get("date"));
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
